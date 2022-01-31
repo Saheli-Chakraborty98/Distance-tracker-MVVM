@@ -1,8 +1,11 @@
 package com.android.arijit.firebase.walker.utils;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.arijit.firebase.walker.R;
@@ -12,14 +15,20 @@ import com.android.arijit.firebase.walker.interfaces.OnFirebaseResultListener;
 import com.android.arijit.firebase.walker.models.ResultData;
 import com.android.arijit.firebase.walker.viewmodel.HistoryListViewModel;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.UUID;
 
 public class FirebaseUtil {
     private static final String TAG = "FirebaseUtil";
@@ -134,6 +143,30 @@ public class FirebaseUtil {
         } else if(mAuth.getCurrentUser() !=null )
             mAuth.signOut();
         return false;
+    }
+
+    // UploadImage method
+    public static void uploadImage(Uri filePath)
+    {
+        if (filePath == null) return;
+
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        String email ;
+        try{
+            email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        } catch (Exception e){
+            email = "email";
+        }
+
+            // Defining the child of storageReference
+            StorageReference ref = FirebaseStorage.getInstance().getReference()
+                    .child( email + "/" + UUID.randomUUID().toString());
+
+            // adding listeners on upload
+            // or failure of image
+            ref.putFile(filePath)
+                    .addOnFailureListener(e -> Log.i(TAG, "uploadImage: " + e.getMessage()) );
     }
 
 }

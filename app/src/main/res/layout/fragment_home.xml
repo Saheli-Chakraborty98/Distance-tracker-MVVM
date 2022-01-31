@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
+
     <data>
-        <import type="com.android.arijit.firebase.walker.views.SettingsFragment"
-            />
+
+        <import type="com.android.arijit.firebase.walker.views.SettingsFragment" />
+
         <variable
             name="viewModel"
             type="com.android.arijit.firebase.walker.viewmodel.LocationViewModel" />
@@ -19,18 +21,53 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_cur_location"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="84dp"
-            android:src="@drawable/ic_baseline_my_location_24"
-            app:backgroundTint="@color/white"
-            app:borderWidth="0dp"
-            app:tint="@color/gray"
-            android:contentDescription="@string/app_name" />
+            android:layout_margin="16dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_action_cam"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_camera_24"
+                app:useCompatPadding="true"
+                app:borderWidth="0dp"
+                app:fabSize="mini" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_cur_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_baseline_my_location_24"
+                app:backgroundTint="@color/white"
+                app:borderWidth="0dp"
+                app:useCompatPadding="true"
+                app:tint="@color/gray" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_baseline_directions_24"
+                app:backgroundTint="@color/fab_blue"
+                app:borderWidth="0dp"
+                app:useCompatPadding="true"
+                app:rippleColor="@android:color/transparent"
+                app:tint="@color/white" />
+
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/tv_timer"
@@ -40,20 +77,6 @@
             android:text="@{String.valueOf(SettingsFragment.DEFAULT_COUNT_DOWN)}"
             android:textAppearance="@style/Widget.MaterialComponents.TimePicker.Display"
             android:visibility="gone" />
-
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_baseline_directions_24"
-            app:backgroundTint="@color/fab_blue"
-            app:borderWidth="0dp"
-            app:tint="@color/white"
-            app:rippleColor="@android:color/transparent"
-            android:contentDescription="@string/app_name" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/tv_container"
