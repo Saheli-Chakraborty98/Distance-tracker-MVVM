@@ -42,6 +42,7 @@
                 android:contentDescription="@null"
                 android:padding="8dp"
                 android:src="@drawable/ic_outline_delete_forever_24"
+                android:tooltipText="Delete"
                 app:tint="@color/danger_red" />
         </LinearLayout>
 

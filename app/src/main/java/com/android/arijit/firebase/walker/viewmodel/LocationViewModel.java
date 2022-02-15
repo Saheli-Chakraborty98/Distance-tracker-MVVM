@@ -1,5 +1,7 @@
 package com.android.arijit.firebase.walker.viewmodel;
 
+import android.net.Uri;
+
 import androidx.databinding.ObservableField;
 import androidx.databinding.ObservableFloat;
 import androidx.lifecycle.LiveData;
@@ -11,6 +13,7 @@ import com.android.arijit.firebase.walker.models.ResultData;
 import com.android.arijit.firebase.walker.utils.FirebaseUtil;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -23,11 +26,21 @@ public class LocationViewModel extends ViewModel {
     public final ObservableField<String> resDate = new ObservableField<>();
     public final ObservableField<String> resTime = new ObservableField<>();
 
+    private Uri currPhotoUri;
+
     public LocationViewModel() {
         this.distInMetre.set(0f);
         this.curGotPosition.setValue(new ArrayList<>());
         this.resultData = new ResultData();
         setDateTime();
+    }
+
+    public Uri getCurrPhotoUri() {
+        return currPhotoUri;
+    }
+
+    public void setCurrPhotoUri(Uri currPhotoUri) {
+        this.currPhotoUri = currPhotoUri;
     }
 
     public ObservableFloat getDistInMetre() {
@@ -89,4 +102,10 @@ public class LocationViewModel extends ViewModel {
         this.resTime.set(resultData.getTime());
     }
 
+    public void uploadCurrentPhoto() {
+        File image = new File(getCurrPhotoUri().getPath());
+        if (image.length() > 0) {
+            FirebaseUtil.uploadImage(getCurrPhotoUri());
+        }
+    }
 }

@@ -1,15 +1,13 @@
 package com.android.arijit.firebase.walker;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -18,7 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.android.arijit.firebase.walker.databinding.ActivityMainBinding;
 import com.android.arijit.firebase.walker.interfaces.OnFirebaseResultListener;
 import com.android.arijit.firebase.walker.utils.FirebaseUtil;
-import com.android.arijit.firebase.walker.views.HistoryFragment;
+import com.android.arijit.firebase.walker.views.HistoryOptionsFragment;
 import com.android.arijit.firebase.walker.views.HomeFragment;
 import com.android.arijit.firebase.walker.views.SettingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -27,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 public class MainActivity extends AppCompatActivity implements
         BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener,
         OnFirebaseResultListener {
+    private static final String TAG = MainActivity.class.getSimpleName();
     boolean isVirgin = false;
     private ActivityMainBinding binding;
     public final static String THEME_KEY = "theme";
@@ -48,14 +47,13 @@ public class MainActivity extends AppCompatActivity implements
                     .setAnchorView(binding.navigation)
                     .show();
         }
-        else {
-            initSettings();
-        }
+
         binding.navigation.setOnNavigationItemSelectedListener(this);
         binding.navigation.setOnNavigationItemReselectedListener(this);
         if(savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
+                    .addToBackStack("stack")
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .replace(R.id.main_fragment_container, new HomeFragment(this))
                     .commit();
@@ -81,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull  MenuItem item) {
         Fragment fragment;
         FragmentManager fm = getSupportFragmentManager();
+        int cnt = fm.getBackStackEntryCount();
+        Log.i(TAG, "onNavigationItemSelected: "+cnt);
         switch (item.getItemId()){
             case R.id.navigation_home:
                 binding.navigation.getMenu()
@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements
                 binding.navigation.getMenu()
                         .findItem(R.id.navigation_settings)
                         .setIcon(R.drawable.ic_outline_settings_24);
-                fm.popBackStack();
+                while(cnt-- > 1)
+                    fm.popBackStack();
                 return true;
             case R.id.navigation_history:
                 binding.navigation.getMenu()
@@ -98,10 +99,10 @@ public class MainActivity extends AppCompatActivity implements
                 binding.navigation.getMenu()
                         .findItem(R.id.navigation_settings)
                         .setIcon(R.drawable.ic_outline_settings_24);
-                if(fm.getBackStackEntryCount() > 0){
+                while(cnt-- > 1)
                     fm.popBackStack();
-                }
-                fragment = new HistoryFragment(this);
+//                fragment = new HistoryFragment(this);
+                fragment = HistoryOptionsFragment.newInstance(this);
                 break;
             case R.id.navigation_settings:
                 binding.navigation.getMenu()
@@ -110,9 +111,8 @@ public class MainActivity extends AppCompatActivity implements
                 binding.navigation.getMenu()
                         .findItem(R.id.navigation_settings)
                         .setIcon(R.drawable.ic_baseline_settings_24);
-                if(fm.getBackStackEntryCount() > 0){
+                while(cnt-- > 1)
                     fm.popBackStack();
-                }
                 fragment = new SettingsFragment();
                 break;
             default:
@@ -150,25 +150,6 @@ public class MainActivity extends AppCompatActivity implements
         Snackbar.make(binding.getRoot(), result, Snackbar.LENGTH_LONG)
                 .setAnchorView(binding.navigation)
                 .show();
-    }
-    public void initSettings(){
-        SharedPreferences sh = getSharedPreferences(SettingsFragment.SH, Context.MODE_PRIVATE);
-        SettingsFragment.SYSTEM_THEME = sh.getInt(THEME_KEY, 0);
-        SettingsFragment.SYSTEM_UNIT = sh.getInt(UNIT_KEY, 0);
-
-        int nightMode;
-        switch (SettingsFragment.SYSTEM_THEME){
-            case 1:
-                nightMode = AppCompatDelegate.MODE_NIGHT_NO;
-                break;
-            case 2:
-                nightMode = AppCompatDelegate.MODE_NIGHT_YES;
-                break;
-            default:
-                nightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-        }
-        AppCompatDelegate.setDefaultNightMode(nightMode);
-
     }
 
 }

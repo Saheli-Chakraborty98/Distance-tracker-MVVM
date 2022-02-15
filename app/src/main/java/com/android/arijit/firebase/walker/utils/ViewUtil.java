@@ -1,5 +1,7 @@
 package com.android.arijit.firebase.walker.utils;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,7 +13,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.util.Log;
+import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.NonNull;
@@ -21,6 +25,7 @@ import com.android.arijit.firebase.walker.R;
 import com.android.arijit.firebase.walker.applications.App;
 import com.android.arijit.firebase.walker.views.HomeFragment;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -112,6 +117,60 @@ public class ViewUtil {
 
     private static int calculateAlpha(int value){
         return (int) ((value*255.0f*2)/ANIM_TIME);
+    }
+
+    public static void showIn(final View v) {
+        v.setVisibility(View.VISIBLE);
+        v.setAlpha(0f);
+        v.setTranslationY(v.getHeight());
+        v.animate().setDuration(200)
+                .translationY(0)
+                .setInterpolator(new LinearInterpolator())
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation, boolean isReverse) {
+                        super.onAnimationEnd(animation, isReverse);
+                    }
+                })
+                .alpha(1f)
+                .start();
+    }
+
+    public static void showOut(final View v) {
+        v.setVisibility(View.VISIBLE);
+        v.setAlpha(1f);
+        v.setTranslationY(0f);
+        v.animate().setDuration(200)
+                .translationY(v.getHeight())
+                .setInterpolator(new LinearInterpolator())
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation, boolean isReverse) {
+                        super.onAnimationEnd(animation, isReverse);
+                    }
+                })
+                .alpha(0f)
+                .start();
+    }
+
+    public static void init(final View v){
+        v.setVisibility(View.GONE);
+        v.setTranslationY(v.getHeight());
+        v.setAlpha(0f);
+    }
+
+    public static Location locationFromLatLng(LatLng a){
+        Location res = new Location("");
+        res.setLatitude(a.latitude);
+        res.setLongitude(a.longitude);
+        return res;
+    }
+
+    public static float calculateLatLngDistance(LatLng a, LatLng b){
+        Location A = locationFromLatLng(a),
+                B = locationFromLatLng(b);
+
+        return A.distanceTo(B);
     }
 
 }

@@ -38,7 +38,7 @@ import java.util.List;
 
 public class ForegroundService extends Service {
 
-    private static final String TAG = "ForegroundService";
+    private static final String TAG = ForegroundService.class.getSimpleName();
     private final Handler handler = new Handler();
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
     private FusedLocationProviderClient providerClient;
@@ -124,13 +124,11 @@ public class ForegroundService extends Service {
         locationRequest.setInterval(3000);
         locationRequest.setSmallestDisplacement(3f);
 
-        handler.post(() -> {
-            if (ActivityCompat.checkSelfPermission(ForegroundService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(ForegroundService.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            providerClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-        });
+        if (ActivityCompat.checkSelfPermission(ForegroundService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(ForegroundService.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        providerClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
     }
     private void stopTrack(){

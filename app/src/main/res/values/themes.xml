@@ -29,4 +29,12 @@
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>
 
+    <style name="HistoryButtonStyle">
+        <item name="android:layout_width">150dp</item>
+        <item name="android:layout_height">150dp</item>
+        <item name="android:padding">18dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">@drawable/history_option_button</item>
+    </style>
+
 </resources>

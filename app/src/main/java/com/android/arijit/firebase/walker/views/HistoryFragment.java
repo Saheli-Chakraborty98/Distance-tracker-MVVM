@@ -22,7 +22,6 @@ import com.android.arijit.firebase.walker.interfaces.OnDataFetchedListener;
 import com.android.arijit.firebase.walker.interfaces.OnFirebaseResultListener;
 import com.android.arijit.firebase.walker.interfaces.OnHistoryItemClickedListener;
 import com.android.arijit.firebase.walker.models.ResultData;
-import com.android.arijit.firebase.walker.utils.FirebaseUtil;
 import com.android.arijit.firebase.walker.utils.ViewUtil;
 import com.android.arijit.firebase.walker.viewmodel.HistoryListViewModel;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,7 +31,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
@@ -100,8 +98,8 @@ public class HistoryFragment extends Fragment implements OnMapReadyCallback,
                     binding.mapPopupContainer.getRoot().setVisibility(View.GONE);
                 }
                 else {
-                    ((BottomNavigationView)requireActivity().findViewById(R.id.navigation))
-                            .setSelectedItemId(R.id.navigation_home);
+                    assert getFragmentManager() != null;
+                    getFragmentManager().popBackStack();
                 }
             }
         });
@@ -120,18 +118,6 @@ public class HistoryFragment extends Fragment implements OnMapReadyCallback,
         binding.mapPopupContainer.historyMapView.onCreate(savedInstanceState);
         binding.mapPopupContainer.historyMapView.getMapAsync(this);
     }
-
-//    private void setObservers() {
-//        FirebaseUtil.liveResultData.observe(requireActivity(), resultData -> {
-//            resultDataArrayList = resultData;
-//            binding.recView.setVisibility(View.VISIBLE);
-//            if(resultDataArrayList != null){
-//                ResultDataAdapter mAdapter = new ResultDataAdapter(getContext(),
-//                        resultDataArrayList, HistoryFragment.this, this.firebaseResultListener);
-//                binding.recView.setAdapter(mAdapter);
-//            }
-//        });
-//    }
 
     @Override
     public void onHistoryItemClicked(int position) {

@@ -3,42 +3,45 @@ package com.android.arijit.firebase.walker.utils;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.arijit.firebase.walker.R;
 import com.android.arijit.firebase.walker.applications.App;
 import com.android.arijit.firebase.walker.interfaces.OnDataFetchedListener;
 import com.android.arijit.firebase.walker.interfaces.OnFirebaseResultListener;
+import com.android.arijit.firebase.walker.models.PictureData;
 import com.android.arijit.firebase.walker.models.ResultData;
+import com.android.arijit.firebase.walker.viewmodel.GalleryViewModel;
 import com.android.arijit.firebase.walker.viewmodel.HistoryListViewModel;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class FirebaseUtil {
-    private static final String TAG = "FirebaseUtil";
+    private static final String TAG = FirebaseUtil.class.getSimpleName();
     final static String DATE = "date",
             TIME = "time",
             DISTANCE = "distance",
             TRAVEL_COORDINATES = "travel_coordinates",
             SERVER_TIME = "server_time",
             HISTORY_COLLECTION = "travel_history",
-            USER = "user";
+            USER = "user",
+            PICTURE_COLLECTION = "picture_collection",
+            PICTURES = "pictures"
+            ;
+
+    final static String COLLECTION_SEPARATOR = "/";
 
     public static void storeData(ResultData data, HistoryListViewModel historyListViewModel, OnFirebaseResultListener listener){
         FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
@@ -104,8 +107,8 @@ public class FirebaseUtil {
                             for (Object ob:tmp){
                                 HashMap<String, Double> hash = (HashMap<String, Double>) ob;
                                 LatLng each = new LatLng(
-                                        Objects.requireNonNull(hash.get("latitude")),
-                                        Objects.requireNonNull(hash.get("longitude"))
+                                    Objects.requireNonNull(hash.get("latitude")),
+                                    Objects.requireNonNull(hash.get("longitude"))
                                 );
                                 toPutInRes.add(each);
                             }
@@ -145,7 +148,12 @@ public class FirebaseUtil {
         return false;
     }
 
-    // UploadImage method
+    /**
+     * static method to upload the image from
+     * the provided path to Firebase Storage
+     * /gs/email/photo.jpeg
+     * @param filePath uri of the file to be uploaded
+     */
     public static void uploadImage(Uri filePath)
     {
         if (filePath == null) return;
@@ -159,14 +167,70 @@ public class FirebaseUtil {
             email = "email";
         }
 
-            // Defining the child of storageReference
-            StorageReference ref = FirebaseStorage.getInstance().getReference()
-                    .child( email + "/" + UUID.randomUUID().toString());
+        // Defining the child of storageReference
+        StorageReference ref = FirebaseStorage.getInstance().getReference()
+            .child( email + "/" + UUID.randomUUID().toString());
 
-            // adding listeners on upload
-            // or failure of image
-            ref.putFile(filePath)
-                    .addOnFailureListener(e -> Log.i(TAG, "uploadImage: " + e.getMessage()) );
+        // adding listeners on upload
+        // or failure of image
+        String finalEmail = email;
+        ref.putFile(filePath)
+            .addOnSuccessListener(taskSnapshot -> {
+                String urlToImage = Objects.requireNonNull(
+                        Objects.requireNonNull(
+                        Objects.requireNonNull(taskSnapshot.getMetadata())
+                        .getReference())
+                        .getDownloadUrl()).toString();
+                Log.i(TAG, "uploadImage: "+urlToImage);
+                saveImageData(finalEmail, urlToImage);
+                // TODO: Delete the local copy of the cache
+            })
+            .addOnFailureListener(e -> Log.i(TAG, "uploadImage: " + e.getMessage()) );
+    }
+
+    public static void saveImageData(String email, String url) {
+        PictureData picData = new PictureData(url);
+        FirebaseFirestore.getInstance()
+            .collection(
+                PICTURE_COLLECTION + COLLECTION_SEPARATOR + email + COLLECTION_SEPARATOR + PICTURES)
+            .add(picData)
+            .addOnFailureListener(error -> Log.i(TAG, "storeData: failure "+ error.getMessage()));
+    }
+
+    /**
+     * fetch all the data related
+     * to images from the Firebase
+     */
+    public static void fetchPictureData(GalleryViewModel.OnDataFetchListener onDoneCallback) {
+        FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        String email ;
+        try{
+            email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        } catch (Exception e){
+            email = "email";
+        }
+        ArrayList<PictureData> pictureList = new ArrayList<>();
+        mFirestore.collection(
+            PICTURE_COLLECTION +
+                    COLLECTION_SEPARATOR + email +
+                    COLLECTION_SEPARATOR + PICTURES
+                )
+                .orderBy("date")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                        pictureList.addAll(
+                                queryDocumentSnapshots.getDocuments()
+                                        .stream()
+                                        .map(documentSnapshot ->
+                                                documentSnapshot.toObject(PictureData.class))
+                                        .collect(Collectors.toList())
+                        );
+                        onDoneCallback.onDataFetch(pictureList);
+                    }
+                );
+
     }
 
 }
